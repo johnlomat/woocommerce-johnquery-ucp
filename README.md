@@ -15,11 +15,42 @@ The [Universal Commerce Protocol (UCP)](https://developers.google.com/commerce/u
 ### How It Works
 
 ```mermaid
-graph LR
-    A[AI Agent<br/>Gemini/GPT/etc] <-->|UCP API| B[This Plugin<br/>UCP API]
-    B <-->|WooCommerce API| C[WooCommerce<br/>Store]
-    A -.->|Creates Session| D[User<br/>Completes Pay]
-    C -.->|Checkout Page| D
+graph TB
+    subgraph "Participants"
+        A[🤖 AI Agent<br/>Gemini/ChatGPT/Claude]
+        B[⚡ UCP Plugin<br/>WP Plugin]
+        C[🏪 WooCommerce<br/>WC Store]
+        D[👤 User<br/>Customer]
+    end
+
+    A --> B --> C --> D
+
+    subgraph "UCP Checkout Flow"
+        S1[1️⃣ Create Session<br/>AI creates cart with products<br/>POST /checkout-sessions]
+        S2[2️⃣ Add Address<br/>User provides shipping info<br/>PUT /checkout-sessions/id]
+        S3[3️⃣ Select Shipping<br/>User selects shipping method<br/>PUT /checkout-sessions/id]
+        S4[4️⃣ Complete<br/>Returns confirm url<br/>POST /checkout-sessions/id/complete]
+        S5[5️⃣ User Completes Payment<br/>User opens confirm_url in browser<br/>→ WooCommerce checkout with pre-filled cart<br/>→ Selects payment method<br/>→ Places order!]
+
+        S1 --> S2
+        S2 --> S3
+        S3 --> S4
+        S4 --> S5
+        S5 -.-> S1
+    end
+
+    subgraph "Session Status"
+        ST1[🟡 incomplete]
+        ST2[🟢 ready_for_complete]
+        ST3[🔵 requires_escalation]
+        ST4[🟢 complete]
+    end
+
+    style S1 fill:#4a5568,stroke:#cbd5e0,color:#fff
+    style S2 fill:#805ad5,stroke:#d6bcfa,color:#fff
+    style S3 fill:#0987a0,stroke:#76e4f7,color:#fff
+    style S4 fill:#2f855a,stroke:#9ae6b4,color:#fff
+    style S5 fill:#9f2042,stroke:#feb2b2,color:#fff
 ```
 
 ## ✨ Features
@@ -62,12 +93,12 @@ graph LR
 
 After activation, go to **WooCommerce → UCP (AI Commerce)**:
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| **Enable UCP** | Turn on/off AI commerce functionality | Enabled |
+| Setting             | Description                             | Default    |
+| ------------------- | --------------------------------------- | ---------- |
+| **Enable UCP**      | Turn on/off AI commerce functionality   | Enabled    |
 | **Session Timeout** | How long checkout sessions remain valid | 30 minutes |
-| **Agent Whitelist** | Restrict access to specific AI agents | Disabled |
-| **Debug Mode** | Enable logging for troubleshooting | Disabled |
+| **Agent Whitelist** | Restrict access to specific AI agents   | Disabled   |
+| **Debug Mode**      | Enable logging for troubleshooting      | Disabled   |
 
 ### Discovery Endpoint Status
 
@@ -77,16 +108,16 @@ The settings page shows whether the `.well-known/ucp` endpoint is active. Click 
 
 All endpoints use the namespace: `/wp-json/wc-jq-ucp/v1/`
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/.well-known/ucp` | GET | Discovery profile (standard location) |
-| `/profile` | GET | Discovery profile (REST API) |
-| `/checkout-sessions` | POST | Create checkout session |
-| `/checkout-sessions/{id}` | GET | Get session details |
-| `/checkout-sessions/{id}` | PUT | Update session (add address, select shipping) |
-| `/checkout-sessions/{id}/complete` | POST | Complete checkout |
-| `/checkout-sessions/{id}/cancel` | POST | Cancel session |
-| `/orders/{id}` | GET | Get order details |
+| Endpoint                           | Method | Description                                   |
+| ---------------------------------- | ------ | --------------------------------------------- |
+| `/.well-known/ucp`                 | GET    | Discovery profile (standard location)         |
+| `/profile`                         | GET    | Discovery profile (REST API)                  |
+| `/checkout-sessions`               | POST   | Create checkout session                       |
+| `/checkout-sessions/{id}`          | GET    | Get session details                           |
+| `/checkout-sessions/{id}`          | PUT    | Update session (add address, select shipping) |
+| `/checkout-sessions/{id}/complete` | POST   | Complete checkout                             |
+| `/checkout-sessions/{id}/cancel`   | POST   | Cancel session                                |
+| `/orders/{id}`                     | GET    | Get order details                             |
 
 ### Required Header
 
@@ -191,6 +222,7 @@ curl -X POST https://yourstore.com/wp-json/wc-jq-ucp/v1/checkout-sessions/{sessi
 ### Step 5: User Completes Payment
 
 The user opens the `continue_url` in their browser. The checkout page loads with:
+
 - ✅ Cart pre-filled with products
 - ✅ Customer info pre-filled
 - ✅ Shipping address pre-filled
@@ -213,16 +245,17 @@ A Postman collection is included for testing. Import `WooCommerce-JohnQuery-UCP.
 
 ### Collection Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `base_url` | Your store URL | `https://yourstore.com` |
-| `product_id` | A product ID to test | `72` |
-| `currency` | Your store currency | `PHP` |
-| `session_id` | Auto-saved after creating session | |
+| Variable     | Description                       | Example                 |
+| ------------ | --------------------------------- | ----------------------- |
+| `base_url`   | Your store URL                    | `https://yourstore.com` |
+| `product_id` | A product ID to test              | `72`                    |
+| `currency`   | Your store currency               | `PHP`                   |
+| `session_id` | Auto-saved after creating session |                         |
 
 ### Test Flow
 
 Run requests in this order:
+
 1. **Create Checkout Session** → Creates cart
 2. **Update (Add Shipping Address)** → Gets shipping options
 3. **Update (Select Shipping Method)** → Ready for payment
@@ -262,21 +295,21 @@ The plugin creates one custom table:
 
 **Table:** `{prefix}_wc_jq_ucp_sessions`
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | BIGINT | Primary key |
-| `session_id` | VARCHAR(64) | Unique session identifier (chk_xxx) |
-| `status` | VARCHAR(32) | Session status |
-| `currency` | VARCHAR(3) | Currency code |
-| `buyer_data` | LONGTEXT | Customer information (JSON) |
-| `line_items` | LONGTEXT | Cart items (JSON) |
-| `totals` | LONGTEXT | Price totals (JSON) |
-| `fulfillment` | LONGTEXT | Shipping info (JSON) |
-| `payment` | LONGTEXT | Payment handlers (JSON) |
-| `wc_order_id` | BIGINT | Linked WooCommerce order ID |
-| `created_at` | DATETIME | Creation timestamp |
-| `updated_at` | DATETIME | Last update timestamp |
-| `expires_at` | DATETIME | Expiration timestamp |
+| Column        | Type        | Description                         |
+| ------------- | ----------- | ----------------------------------- |
+| `id`          | BIGINT      | Primary key                         |
+| `session_id`  | VARCHAR(64) | Unique session identifier (chk_xxx) |
+| `status`      | VARCHAR(32) | Session status                      |
+| `currency`    | VARCHAR(3)  | Currency code                       |
+| `buyer_data`  | LONGTEXT    | Customer information (JSON)         |
+| `line_items`  | LONGTEXT    | Cart items (JSON)                   |
+| `totals`      | LONGTEXT    | Price totals (JSON)                 |
+| `fulfillment` | LONGTEXT    | Shipping info (JSON)                |
+| `payment`     | LONGTEXT    | Payment handlers (JSON)             |
+| `wc_order_id` | BIGINT      | Linked WooCommerce order ID         |
+| `created_at`  | DATETIME    | Creation timestamp                  |
+| `updated_at`  | DATETIME    | Last update timestamp               |
+| `expires_at`  | DATETIME    | Expiration timestamp                |
 
 ## 🧹 Uninstallation
 
@@ -293,6 +326,7 @@ The `.well-known/` parent folder is NOT deleted as it may be used by other servi
 ## 📝 Changelog
 
 ### Version 1.5.0
+
 - Added vendor prefix (`wc_jq_ucp_`) for conflict prevention
 - Updated branding to JohnQuery
 - Improved session management
@@ -300,19 +334,23 @@ The `.well-known/` parent folder is NOT deleted as it may be used by other servi
 - Better error handling
 
 ### Version 1.4.0
+
 - Added cart pre-fill on checkout page
 - Link orders to UCP sessions
 - Improved admin interface
 
 ### Version 1.3.0
+
 - Fixed shipping calculation in REST API context
 - Initialize WooCommerce session properly
 
 ### Version 1.2.0
+
 - Added uninstall.php for clean removal
 - Added discovery endpoint status indicator
 
 ### Version 1.1.0
+
 - Initial release with core UCP functionality
 
 ## 🤝 Contributing
@@ -326,6 +364,7 @@ This plugin is licensed under the [GPL v2 or later](https://www.gnu.org/licenses
 ## 👤 Author
 
 **JohnQuery**
+
 - Website: [https://www.johnquery.com](https://www.johnquery.com)
 
 ## 🙏 Acknowledgments
