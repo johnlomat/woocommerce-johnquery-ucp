@@ -14,16 +14,12 @@ The [Universal Commerce Protocol (UCP)](https://developers.google.com/commerce/u
 
 ### How It Works
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│    AI Agent     │────▶│   This Plugin   │────▶│   WooCommerce   │
-│ (Gemini/GPT/etc)│◀────│   (UCP API)     │◀────│     Store       │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-         │                                               │
-         │              ┌─────────────────┐              │
-         └─────────────▶│      User       │◀─────────────┘
-                        │ (Completes Pay) │
-                        └─────────────────┘
+```mermaid
+graph LR
+    A[AI Agent<br/>Gemini/GPT/etc] <-->|UCP API| B[This Plugin<br/>UCP API]
+    B <-->|WooCommerce API| C[WooCommerce<br/>Store]
+    A -.->|Creates Session| D[User<br/>Completes Pay]
+    C -.->|Checkout Page| D
 ```
 
 ## ✨ Features
