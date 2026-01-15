@@ -1,0 +1,48 @@
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Composer
+/vendor/
+composer.lock
+
+# Node
+/node_modules/
+package-lock.json
+yarn.lock
+
+# Build
+/dist/
+/build/
+*.zip
+
+# Logs
+*.log
+debug.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# WordPress
+wp-config.php
+/wp-content/uploads/
+/wp-content/upgrade/
+/wp-content/cache/
+
+# Testing
+/tests/coverage/
+.phpunit.result.cache
+phpunit.xml
+
+# Misc
+*.bak
+*.swp
+*~

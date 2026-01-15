@@ -1,0 +1,94 @@
+/**
+ * WooCommerce UCP Admin Styles
+ */
+
+.wc-ucp-info-box {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-left: 4px solid #2271b1;
+    padding: 12px 20px;
+    margin: 20px 0;
+}
+
+.wc-ucp-info-box h3 {
+    margin-top: 0;
+    color: #1d2327;
+}
+
+.wc-ucp-info-box code {
+    display: block;
+    padding: 10px;
+    background: #f0f0f1;
+    margin: 10px 0;
+    font-size: 13px;
+    word-break: break-all;
+}
+
+.wc-ucp-info-box h4 {
+    margin-bottom: 5px;
+}
+
+.wc-ucp-keys-section,
+.wc-ucp-test-section {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.wc-ucp-keys-section h2,
+.wc-ucp-test-section h2 {
+    margin-top: 0;
+}
+
+.wc-ucp-keys-section textarea {
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.wc-ucp-keys-section .button {
+    margin-right: 10px;
+}
+
+.wc-ucp-keys-section .description {
+    color: #d63638;
+}
+
+/* Status indicators */
+.wc-ucp-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.wc-ucp-status-enabled {
+    background: #d4edda;
+    color: #155724;
+}
+
+.wc-ucp-status-disabled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Form improvements */
+#wc-ucp-settings .form-table th {
+    width: 200px;
+}
+
+#wc-ucp-settings .form-table td {
+    padding: 15px 10px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .wc-ucp-info-box code {
+        font-size: 11px;
+    }
+    
+    #wc-ucp-settings .form-table th {
+        width: auto;
+    }
+}
